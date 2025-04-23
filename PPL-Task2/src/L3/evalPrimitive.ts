@@ -4,7 +4,7 @@ import { isCompoundSExp, isEmptySExp, isSymbolSExp, makeCompoundSExp, makeEmptyS
 import { List, allT, first, isNonEmptyList, rest } from '../shared/list';
 import { isBoolean, isNumber, isString } from "../shared/type-predicates";
 import { Result, makeOk, makeFailure } from "../shared/result";
-import { format } from "../shared/format";
+import { format } from "../shared/format";s
 
 export const applyPrimitive = (proc: PrimOp, args: Value[]): Result<Value> =>
     proc.op === "+" ? (allT(isNumber, args) ? makeOk(reduce((x, y) => x + y, 0, args)) : 
