@@ -5,7 +5,7 @@ import { List, allT, first, isNonEmptyList, rest } from '../shared/list';
 import { isBoolean, isNumber, isString } from "../shared/type-predicates";
 import { Result, makeOk, makeFailure } from "../shared/result";
 import { format } from "../shared/format";
-import { isDictExp } from "../L32/L32-ast";
+
 
 export const applyPrimitive = (proc: PrimOp, args: Value[]): Result<Value> =>
     proc.op === "+" ? (allT(isNumber, args) ? makeOk(reduce((x, y) => x + y, 0, args)) : 
@@ -34,27 +34,47 @@ export const applyPrimitive = (proc: PrimOp, args: Value[]): Result<Value> =>
     proc.op === "symbol?" ? makeOk(isSymbolSExp(args[0])) :
     proc.op === "string?" ? makeOk(isString(args[0])) :
     // 2.1.c
-    proc.op === "dict" ? (args.length === 1 && isCompoundSExp(args[0]) ? makeOk(args[0]) :
+    proc.op === "dict" ? (args.length === 1 && isDictPrim(args[0]) ? makeOk(dictPrim(args[0])) :
         makeFailure(`dict expects exactly one argument of compound SExp: ${format(args)}`)) :
 
     proc.op === "get" ? (args.length === 2 && isCompoundSExp(args[0]) && isSymbolSExp(args[1]) ? applyGet(args[0], args[1].val) :
         makeFailure(`get expects a dictionary and a symbol: ${format(args)}`)) :
 
-    proc.op === "dict" ? (args.length === 1 && isCompoundSExp(args[0]) && isValidDict(args[0]) && !hasDuplicates(args[0])
-        ? makeOk(args[0])
-        : makeFailure(`dict expects one valid argument of compound SExp with symbol keys and no duplicates: ${format(args)}`)) :
+    proc.op === "dict?" ? (args.length === 1 ? makeOk(isDictPrim(args[0])) :
+        makeFailure(`dict? expects exactly one argument: ${format(args)}`)) :
 
     makeFailure(`Bad primitive op: ${format(proc.op)}`);
 
+// Functions added for the new prim ops //
+const dictPrim = (val: Value): CompoundSExp =>
+    isCompoundSExp(val) ? val : makeCompoundSExp(val, makeEmptySExp());
+
+const isDictPrim = (val: Value): boolean =>
+    isCompoundSExp(val) && isValidDict(val) && !hasDuplicateKeys(val);
 
 const isValidDict = (val: Value): boolean =>
     isEmptySExp(val) || 
         (isCompoundSExp(val) &&
             isCompoundSExp(val.val1) && isSymbolSExp(val.val1.val1) &&
-                isValidDict(val.val2));
+                isValidDict(val.val2)); 
+
+const hasDuplicateKeys = (dict: CompoundSExp): boolean => {
+    const collectKeys = (d: CompoundSExp): SymbolSExp[] => {
+        const pair = d.val1 as CompoundSExp;
+        const key = pair.val1 as SymbolSExp;
+
+        return isEmptySExp(d.val2)
+            ? [key]
+            : [key].concat(collectKeys(d.val2 as CompoundSExp));
+    };
+
+    const keys: SymbolSExp[] = collectKeys(dict);
+    const vals: string[] = keys.map(sym => sym.val);
+    return new Set(vals).size !== vals.length;
+};
 
 const applyGet = (dict: Value, key: string): Result<Value> =>
-    isCompoundSExp(dict) && isValidDict(dict)
+    isCompoundSExp(dict) && isDictPrim(dict)
         ? findInDict(dict, makeSymbolSExp(key))
         : makeFailure(`Error: invalid dictionary or key: ${format(dict)}, ${key}`);
         
@@ -69,6 +89,8 @@ const findInDict = (dict: CompoundSExp, key: SymbolSExp): Result<Value> =>
                 ? findInDict(dict.val2, key)
                 : makeFailure(`get: Key not found in dictionary: ${format(key)}`));
 
+//
+                
 
 
 const minusPrim = (args: Value[]): Result<number> => {
