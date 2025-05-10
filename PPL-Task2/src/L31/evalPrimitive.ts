@@ -68,6 +68,7 @@ const findInDict = (dict: CompoundSExp, key: SymbolSExp): Result<Value> =>
                 ? findInDict(dict.val2, key)
                 : makeFailure(`get: Key not found in dictionary: ${format(key)}`));
 
+                
 
 const minusPrim = (args: Value[]): Result<number> => {
     // TODO complete
