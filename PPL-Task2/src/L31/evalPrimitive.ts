@@ -1,6 +1,6 @@
 import { reduce } from "ramda";
 import { PrimOp } from "./L31-ast";
-import { isCompoundSExp, isEmptySExp, isSymbolSExp, makeCompoundSExp, makeEmptySExp, CompoundSExp, EmptySExp, Value } from "./L31-value";
+import { isCompoundSExp, isEmptySExp, isSymbolSExp, makeCompoundSExp, makeEmptySExp, CompoundSExp, EmptySExp, Value, makeSymbolSExp, SymbolSExp } from "./L31-value";
 import { List, allT, first, isNonEmptyList, rest } from '../shared/list';
 import { isBoolean, isNumber, isString } from "../shared/type-predicates";
 import { Result, makeOk, makeFailure } from "../shared/result";
@@ -34,11 +34,39 @@ export const applyPrimitive = (proc: PrimOp, args: Value[]): Result<Value> =>
     proc.op === "symbol?" ? makeOk(isSymbolSExp(args[0])) :
     proc.op === "string?" ? makeOk(isString(args[0])) :
     // 2.1.c
-    proc.op === "dict" ? makeOk(dictPrim(args[0])) :
-    proc.op === "dict?" ? makeOk(isDictPrim(args[0])) :
-    proc.op === "get" ? makeOk(getPrim(args[0])) :
+    proc.op === "dict" ? (args.length === 1 && isCompoundSExp(args[0]) ? makeOk(args[0]) :
+        makeFailure(`dict expects exactly one argument of compound SExp: ${format(args)}`)) :
+
+    proc.op === "get" ? (args.length === 2 && isCompoundSExp(args[0]) && isSymbolSExp(args[1]) ? applyGet(args[0], args[1].val) :
+        makeFailure(`get expects a dictionary and a symbol: ${format(args)}`)) :
+
+    proc.op === "dict?" ? (args.length === 1 ? makeOk(isValidDict(args[0])) :
+        makeFailure(`dict? expects exactly one argument: ${format(args)}`)) :
 
     makeFailure(`Bad primitive op: ${format(proc.op)}`);
+
+
+const isValidDict = (val: Value): boolean =>
+    isEmptySExp(val) || 
+        (isCompoundSExp(val) &&
+            isCompoundSExp(val.val1) && isSymbolSExp(val.val1.val1) &&
+                isValidDict(val.val2));
+
+const applyGet = (dict: Value, key: string): Result<Value> =>
+    isCompoundSExp(dict) && isValidDict(dict)
+        ? findInDict(dict, makeSymbolSExp(key))
+        : makeFailure(`Error: invalid dictionary or key: ${format(dict)}, ${key}`);
+        
+const findInDict = (dict: CompoundSExp, key: SymbolSExp): Result<Value> =>
+    isEmptySExp(dict.val2)
+        ? (isCompoundSExp(dict.val1) && isSymbolSExp(dict.val1.val1) && dict.val1.val1.val === key.val
+            ? makeOk(dict.val1.val2)
+            : makeFailure(`get: Key not found in dictionary: ${format(key)}`))
+        : (isCompoundSExp(dict.val1) && isSymbolSExp(dict.val1.val1) && dict.val1.val1.val === key.val
+            ? makeOk(dict.val1.val2)
+            : isCompoundSExp(dict.val2)
+                ? findInDict(dict.val2, key)
+                : makeFailure(`get: Key not found in dictionary: ${format(key)}`));
 
 
 const minusPrim = (args: Value[]): Result<number> => {
