@@ -1,0 +1,47 @@
+#lang racket/base
+
+;; Signature: last-item(lst)
+;; Type: List(T) -> T
+;; Purpose: Return the last element of the list.
+;; Pre-conditions: The list is non-empty.
+;; Tests: (last-item '(1 2 3 4)) → 4; (last-item '(a b c)) → c
+(define last-item
+    (lambda (lst)
+    (if (eq? (cdr lst) '())
+        (car lst)
+        (last-item (cdr lst))
+    )
+))
+
+
+;; Signature: remove-last-item(lst)
+;; Type: List(T) -> List(T)
+;; Purpose: Returns a list with the last item removed.
+;; Pre-conditions: The list is non-empty.
+;; Tests: (remove-last-item '(1 2 3 4)) → (1 2 3); (remove-last-item '(a b c)) → (a b)
+(define remove-last-item
+    (lambda (lst)
+    (if (eq? (cdr lst) '())
+        '()
+        (cons (car lst) (remove-last-item(cdr lst)))    
+    )
+))
+
+
+;; Signature: rotate-nth(lst, n)
+;; Type: List(T)*number -> List(T)
+;; Purpose: Rotates the list by moving the last element to the front, n times.
+;; Pre-conditions: n is a non-negative number.
+;; Tests: (rotate-nth '(1 2 3 4) 1) → (4 1 2 3); (rotate-nth '(a b c d) 2) → (c d a b)
+(define rotate-nth
+    (lambda (lst n)
+    (if (eq? lst '())
+        '()
+        (if (= n 0)
+        lst
+        (rotate-nth
+            (cons (last-item lst) (remove-last-item lst) )
+            (- n 1) )  
+        ) 
+    )
+))

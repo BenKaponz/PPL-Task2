@@ -36,7 +36,7 @@ import { Sexp, Token } from "s-expression";
 ;; <binding>  ::= ( <var> <cexp> )           / Binding(var:VarDecl, val:Cexp)
 ;; <prim-op>  ::= + | - | * | / | < | > | = | not |  and | or | eq? | string=?
 ;;                  | cons | car | cdr | pair? | number? | list 
-;;                  | boolean? | symbol? | string?      ##### L3
+;;                  | boolean? | symbol? | string? | dict | get | dict?      ##### L3
 ;; <num-exp>  ::= a number token
 ;; <bool-exp> ::= #t | #f
 ;; <var-ref>  ::= an identifier token
@@ -111,6 +111,7 @@ export const isLetExp = (x: any): x is LetExp => x.tag === "LetExp";
 // L3
 export const isLitExp = (x: any): x is LitExp => x.tag === "LitExp";
 
+
 // Type predicates for type unions
 export const isExp = (x: any): x is Exp => isDefineExp(x) || isCExp(x);
 export const isAtomicExp = (x: any): x is AtomicExp =>
@@ -170,6 +171,7 @@ export const parseL31SpecialForm = (op: Sexp, params: Sexp[]): Result<CExp> =>
         makeFailure(`Bad quote exp: ${params}`) :
     makeFailure("Never");
 
+
 // DefineExp -> (define <varDecl> <CExp>)
 export const parseDefine = (params: List<Sexp>): Result<DefineExp> =>
     isNonEmptyList<Sexp>(params) ? 
@@ -202,15 +204,15 @@ export const parseL31Atomic = (token: Token): Result<CExp> =>
 /*
     ;; <prim-op>  ::= + | - | * | / | < | > | = | not | and | or | eq? | string=?
     ;;                  | cons | car | cdr | pair? | number? | list
-    ;;                  | boolean? | symbol? | string?      ##### L3
+    ;;                  | boolean? | symbol? | string? | dict | get | dict?        ##### L3
 */
 const isPrimitiveOp = (x: string): boolean =>
     ["+", "-", "*", "/", ">", "<", "=", "not", "and", "or",
      "eq?", "string=?", "cons", "car", "cdr", "list", "pair?",
-     "number?", "boolean?", "symbol?", "string?"].includes(x);
+     "number?", "boolean?", "symbol?", "string?", "dict", "get", "dict?"].includes(x); // 2.1.b.
 
 const isSpecialForm = (x: string): boolean =>
-    ["if", "lambda", "let", "quote"].includes(x);
+    ["if", "lambda", "let", "quote"].includes(x);   
 
 const parseAppExp = (op: Sexp, params: Sexp[]): Result<AppExp> =>
     bind(parseL31CExp(op), (rator: CExp) => 

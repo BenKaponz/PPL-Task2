@@ -1,0 +1,11 @@
+(define get
+    (lambda (dict key)
+        (if (pair? dict)
+            (if (eq? (car (car dict)) key)
+                (cdr (car dict))
+                (get (cdr dict) key ))
+            (make-error "key not found"))))
+
+(define make-error
+    (lambda (message)
+        message))

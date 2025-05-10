@@ -5,6 +5,7 @@ import { List, allT, first, isNonEmptyList, rest } from '../shared/list';
 import { isBoolean, isNumber, isString } from "../shared/type-predicates";
 import { Result, makeOk, makeFailure } from "../shared/result";
 import { format } from "../shared/format";
+import { isDictExp } from "../L32/L32-ast";
 
 export const applyPrimitive = (proc: PrimOp, args: Value[]): Result<Value> =>
     proc.op === "+" ? (allT(isNumber, args) ? makeOk(reduce((x, y) => x + y, 0, args)) : 
@@ -32,7 +33,13 @@ export const applyPrimitive = (proc: PrimOp, args: Value[]): Result<Value> =>
     proc.op === "boolean?" ? makeOk(typeof (args[0]) === 'boolean') :
     proc.op === "symbol?" ? makeOk(isSymbolSExp(args[0])) :
     proc.op === "string?" ? makeOk(isString(args[0])) :
+    // 2.1.c
+    proc.op === "dict" ? makeOk(dictPrim(args[0])) :
+    proc.op === "dict?" ? makeOk(isDictPrim(args[0])) :
+    proc.op === "get" ? makeOk(getPrim(args[0])) :
+
     makeFailure(`Bad primitive op: ${format(proc.op)}`);
+
 
 const minusPrim = (args: Value[]): Result<number> => {
     // TODO complete
