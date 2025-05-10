@@ -40,8 +40,9 @@ export const applyPrimitive = (proc: PrimOp, args: Value[]): Result<Value> =>
     proc.op === "get" ? (args.length === 2 && isCompoundSExp(args[0]) && isSymbolSExp(args[1]) ? applyGet(args[0], args[1].val) :
         makeFailure(`get expects a dictionary and a symbol: ${format(args)}`)) :
 
-    proc.op === "dict?" ? (args.length === 1 ? makeOk(isValidDict(args[0])) :
-        makeFailure(`dict? expects exactly one argument: ${format(args)}`)) :
+    proc.op === "dict" ? (args.length === 1 && isCompoundSExp(args[0]) && isValidDict(args[0]) && !hasDuplicates(args[0])
+        ? makeOk(args[0])
+        : makeFailure(`dict expects one valid argument of compound SExp with symbol keys and no duplicates: ${format(args)}`)) :
 
     makeFailure(`Bad primitive op: ${format(proc.op)}`);
 
@@ -68,7 +69,7 @@ const findInDict = (dict: CompoundSExp, key: SymbolSExp): Result<Value> =>
                 ? findInDict(dict.val2, key)
                 : makeFailure(`get: Key not found in dictionary: ${format(key)}`));
 
-                
+
 
 const minusPrim = (args: Value[]): Result<number> => {
     // TODO complete
