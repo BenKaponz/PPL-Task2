@@ -24,11 +24,13 @@
             (if (pair? d)
                 (if (pair? (car d))
                     (if (symbol? (car (car d)))
-                        (dict? (cdr d))
+                        (isDict? (cdr d))
                         #f
                     )
-                    #f)
-                #f)
+                    #f
+                )
+                #f
+            )
         )
     )
 )
@@ -37,7 +39,7 @@
     (lambda (d)
         (if (eq? d '())
             #f
-            (if (is-error? (get ((cdr d) (car (car d)))))
+            (if (is-error? (get (cdr d) (car (car d))))
                 (no-duplicates? (cdr d))
                 #f
             )
@@ -48,7 +50,7 @@
 (define dict?
     (lambda (d)
         (if (isDict? d)
-            (no-duplicates d)
+            (no-duplicates? d)
             #f
         )
     )
