@@ -8,12 +8,47 @@
 )
 
 (define make-error
-    (lambda () 'error)
+    (lambda ()
+        'error
+    )
 )
 
 (define is-error?
     (lambda (x)
         (eq? x 'error)
+    )
+)
+
+(define member?
+    (lambda (x xs)
+        (if (null? xs)
+            #f
+            (if (eq? x (car xs))
+                #t
+                (member? x (cdr xs))
+            )
+        )
+    )
+)
+
+(define collect-keys
+    (lambda (d)
+        (if (null? d)
+            '()
+            (cons (car (car d)) (collect-keys (cdr d)))
+        )
+    )
+)
+
+(define no-duplicates?
+    (lambda (keys)
+        (if (null? keys)
+            #t
+            (if (member? (car keys) (cdr keys))
+                #f
+                (no-duplicates? (cdr keys))
+            )
+        )
     )
 )
 
@@ -32,9 +67,17 @@
             #t
             (if (pair? d)
                 (if (pair? (car d))
-                    (dict? (cdr d))
-                    #f)
-                #f)
+                    (if (symbol? (car (car d)))
+                        (if (no-duplicates? (collect-keys d))
+                            (dict? (cdr d))
+                            #f
+                        )
+                        #f
+                    )
+                    #f
+                )
+                #f
+            )
         )
     )
 )
