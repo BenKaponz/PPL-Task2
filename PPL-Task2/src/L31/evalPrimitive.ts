@@ -50,7 +50,8 @@ const dictPrim = (val: Value): CompoundSExp =>
     isCompoundSExp(val) ? val : makeCompoundSExp(val, makeEmptySExp());
 
 const isDictPrim = (val: Value): boolean =>
-    isEmptySExp(val) || isCompoundSExp(val) && isValidDict(val) && !hasDuplicateKeys(val);
+    isEmptySExp(val) || 
+        isCompoundSExp(val) && isValidDict(val) && !hasDuplicateKeys(val);
 
 const isValidDict = (val: Value): boolean =>
     isEmptySExp(val) || 

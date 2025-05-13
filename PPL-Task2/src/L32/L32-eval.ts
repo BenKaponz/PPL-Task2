@@ -1,6 +1,6 @@
 // L32-eval.ts
 import { map } from "ramda";
-import { isCExp, isLetExp } from "./L32-ast";
+import { isCExp, isDictExp, isLetExp } from "./L32-ast";
 import { BoolExp, CExp, Exp, IfExp, LitExp, NumExp,
          PrimOp, ProcExp, Program, StrExp, VarDecl } from "./L32-ast";
 import { isAppExp, isBoolExp, isDefineExp, isIfExp, isLitExp, isNumExp,
@@ -34,7 +34,10 @@ const L32applicativeEval = (exp: CExp, env: Env): Result<Value> =>
                         bind(mapResult(param => L32applicativeEval(param, env), exp.rands), (rands: Value[]) =>
                             L32applyProcedure(rator, rands, env))) :
     isLetExp(exp) ? makeFailure('"let" not supported (yet)') :
+    isDictExp(exp) ? evalDict(exp, env) :
     exp;
+
+const evalDict = s;
 
 export const isTrueValue = (x: Value): boolean =>
     ! (x === false);
