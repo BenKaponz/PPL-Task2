@@ -17,16 +17,7 @@
     )
 )
 
-(define dict
-    (lambda (p)
-        (if (pair? p)
-            p
-            (make-error)
-        )
-    )
-)
-
-(define dict?
+(define isDict?
     (lambda (d)
         (if (eq? d '())
             #t
@@ -38,6 +29,36 @@
                     )
                     #f)
                 #f)
+        )
+    )
+)
+
+(define no-duplicates?
+    (lambda (d)
+        (if (eq? d '())
+            #f
+            (if (is-error? (get ((cdr d) (car (car d)))))
+                (no-duplicates? (cdr d))
+                #f
+            )
+        )
+    ) 
+)
+
+(define dict?
+    (lambda (d)
+        (if (isDict? d)
+            (no-duplicates d)
+            #f
+        )
+    )
+)
+
+(define dict
+    (lambda (p)
+        (if (dict? p)
+            p
+            (make-error)
         )
     )
 )
