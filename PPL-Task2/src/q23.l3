@@ -37,11 +37,14 @@
 
 (define member?
     (lambda (d key)
-        (if (eq? (car (car d)) key)
-            #t
-            (if (eq? (cdr d) '())
-                #f
-                (member? (cdr d) key)
+        (if (eq? d '())
+            #f
+            (if (eq? (car (car d)) key)
+                #t
+                (if (eq? (cdr d) '())
+                    #f
+                    (member? (cdr d) key)
+                )
             )
         )
     )
