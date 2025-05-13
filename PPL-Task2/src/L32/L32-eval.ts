@@ -1,6 +1,6 @@
 // L32-eval.ts
 import { map } from "ramda";
-import { isCExp, isDictExp, isLetExp } from "./L32-ast";
+import { DictExp, isCExp, isDictExp, isLetExp, makeDictExp } from "./L32-ast";
 import { BoolExp, CExp, Exp, IfExp, LitExp, NumExp,
          PrimOp, ProcExp, Program, StrExp, VarDecl } from "./L32-ast";
 import { isAppExp, isBoolExp, isDefineExp, isIfExp, isLitExp, isNumExp,
@@ -8,7 +8,7 @@ import { isAppExp, isBoolExp, isDefineExp, isIfExp, isLitExp, isNumExp,
 import { makeBoolExp, makeLitExp, makeNumExp, makeProcExp, makeStrExp } from "./L32-ast";
 import { parseL32Exp } from "./L32-ast";
 import { applyEnv, makeEmptyEnv, makeEnv, Env } from "./L32-env";
-import { isClosure, makeClosure, Closure, Value } from "./L32-value";
+import { isClosure, makeClosure, Closure, Value, makeDictValue, isDictValue, DictValue, isSymbolSExp, makeSymbolSExp } from "./L32-value";
 import { first, rest, isEmpty, List, isNonEmptyList } from '../shared/list';
 import { isBoolean, isNumber, isString } from "../shared/type-predicates";
 import { Result, makeOk, makeFailure, bind, mapResult, mapv } from "../shared/result";
@@ -37,7 +37,22 @@ const L32applicativeEval = (exp: CExp, env: Env): Result<Value> =>
     isDictExp(exp) ? evalDict(exp, env) :
     exp;
 
-const evalDict = s;
+    const evalDict = (exp: DictExp, env: Env): Result<Value> => {
+        const keys = exp.entries.map(e => e.key.val);
+        const unique = new Set(keys);
+        if (unique.size !== keys.length) {
+          return makeFailure(`dict: Duplicate key(s) found: ${keys.join(", ")}`);
+        }
+        
+        return bind(mapResult(entry => L32applicativeEval(entry.val, env), exp.entries),
+          (vals: Value[]) => {
+            const entries: [string, Value][] = exp.entries.map((e, i) =>
+              [e.key.val, vals[i]]
+            );
+            return makeOk(makeDictValue(entries));
+          }
+        );
+      };
 
 export const isTrueValue = (x: Value): boolean =>
     ! (x === false);
@@ -53,18 +68,22 @@ const evalProc = (exp: ProcExp, env: Env): Result<Closure> =>
 const L32applyProcedure = (proc: Value, args: Value[], env: Env): Result<Value> =>
     isPrimOp(proc) ? applyPrimitive(proc, args) :
     isClosure(proc) ? applyClosure(proc, args, env) :
+    isDictValue(proc) ? applyDict(proc, args) :
     makeFailure(`Bad procedure ${format(proc)}`);
 
 // Applications are computed by substituting computed
 // values into the body of the closure.
 // To make the types fit - computed values of params must be
 // turned back in Literal Expressions that eval to the computed value.
-const valueToLitExp = (v: Value): NumExp | BoolExp | StrExp | LitExp | PrimOp | ProcExp =>
+const valueToLitExp = (v: Value): NumExp | BoolExp | StrExp | LitExp | PrimOp | ProcExp | DictExp =>
     isNumber(v) ? makeNumExp(v) :
     isBoolean(v) ? makeBoolExp(v) :
     isString(v) ? makeStrExp(v) :
     isPrimOp(v) ? v :
     isClosure(v) ? makeProcExp(v.params, v.body) :
+    isDictValue(v) ? makeDictExp(v.entries.map(([key, val]) => ({
+          key: makeSymbolSExp(key),
+          val: valueToLitExp(val) }))):
     makeLitExp(v);
 
 const applyClosure = (proc: Closure, args: Value[], env: Env): Result<Value> => {
@@ -73,6 +92,19 @@ const applyClosure = (proc: Closure, args: Value[], env: Env): Result<Value> => 
     const litArgs = map(valueToLitExp, args);
     return evalSequence(substitute(body, vars, litArgs), env);
 }
+
+const applyDict = (dict: DictValue, args: Value[]): Result<Value> => {
+    if (args.length !== 1) {
+      return makeFailure(`Dictionary application expects one argument, but got: ${args.length}`);
+    }
+    const key = args[0];
+    if (!isSymbolSExp(key)) {
+      return makeFailure(`Dictionary key must be a symbol, but got: ${format(key)}`);
+    }
+
+    const found = dict.entries.find(entry => entry[0] === key.val);
+    return found ? makeOk(found[1]) : makeFailure(`Key not found in dictionary: ${key.val}`);
+  };
 
 // Evaluate a sequence of expressions (in a program)
 export const evalSequence = (seq: List<Exp>, env: Env): Result<Value> =>

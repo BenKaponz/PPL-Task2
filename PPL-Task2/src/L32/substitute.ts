@@ -1,5 +1,5 @@
 import { filter, indexOf, map, includes, zip, KeyValuePair } from "ramda";
-import { CExp, ProcExp, VarDecl, VarRef } from "./L32-ast";
+import { CExp, ProcExp, VarDecl, VarRef, isDictExp, makeDictExp } from "./L32-ast";
 import { isAppExp, isBoolExp, isIfExp, isLitExp, isNumExp, isPrimOp, isProcExp, isStrExp, isVarRef } from "./L32-ast";
 import { makeAppExp, makeIfExp, makeProcExp, makeVarDecl, makeVarRef } from "./L32-ast";
 import { first } from '../shared/list';
@@ -38,6 +38,7 @@ export const substitute = (body: CExp[], vars: string[], exps: CExp[]): CExp[] =
         isIfExp(e) ? makeIfExp(sub(e.test), sub(e.then), sub(e.alt)) :
         isProcExp(e) ? subProcExp(e) :
         isAppExp(e) ? makeAppExp(sub(e.rator), map(sub, e.rands)) :
+        isDictExp(e) ? makeDictExp(e.entries.map(({key, val}) => ({ key, val: sub(val) }))) :
         e;
     
     return map(sub, body);
@@ -63,6 +64,7 @@ export const renameExps = (exps: CExp[]): CExp[] => {
         isIfExp(e) ? makeIfExp(replace(e.test), replace(e.then), replace(e.alt)) :
         isAppExp(e) ? makeAppExp(replace(e.rator), map(replace, e.rands)) :
         isProcExp(e) ? replaceProc(e) :
+        isDictExp(e) ? makeDictExp(e.entries.map(({ key, val }) => ({ key, val: replace(val) }))) :
         e;
     
     // Rename the params and substitute old params with renamed ones.

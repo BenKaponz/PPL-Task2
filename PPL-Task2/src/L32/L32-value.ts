@@ -35,8 +35,12 @@ export type SymbolSExp = {
     tag: "SymbolSExp";
     val: string;
 }
+export type DictValue = {
+    tag: "DictValue";
+    entries: [string, Value][];
+}
 
-export type SExpValue = number | boolean | string | PrimOp | Closure | SymbolSExp | EmptySExp | CompoundSExp;
+export type SExpValue = number | boolean | string | PrimOp | Closure | SymbolSExp | EmptySExp | CompoundSExp | DictValue;
 export const isSExp = (x: any): x is SExpValue =>
     typeof(x) === 'string' || typeof(x) === 'boolean' || typeof(x) === 'number' ||
     isSymbolSExp(x) || isCompoundSExp(x) || isEmptySExp(x) || isPrimOp(x) || isClosure(x);
@@ -44,6 +48,10 @@ export const isSExp = (x: any): x is SExpValue =>
 export const makeCompoundSExp = (val1: SExpValue, val2: SExpValue): CompoundSExp =>
     ({tag: "CompoundSexp", val1: val1, val2 : val2});
 export const isCompoundSExp = (x: any): x is CompoundSExp => x.tag === "CompoundSexp";
+
+export const makeDictValue = (entries: [string, Value][]): DictValue =>
+    ({ tag: "DictValue", entries });
+export const isDictValue = (x: any): x is DictValue => x.tag === "DictValue";
 
 export const makeEmptySExp = (): EmptySExp => ({tag: "EmptySExp"});
 export const isEmptySExp = (x: any): x is EmptySExp => x.tag === "EmptySExp";
@@ -70,6 +78,9 @@ export const compoundSExpToString = (cs: CompoundSExp, css = compoundSExpToArray
     isArray(css) ? `(${css.join(' ')})` :
     `(${css.s1.join(' ')} . ${css.s2})`
 
+export const dictToString = (d: DictValue): string =>
+        `<Dict ${d.entries.map(([k, v]) => `(${k} . ${valueToString(v)})`).join(" ")}>`;
+
 export const valueToString = (val: Value): string =>
     isNumber(val) ?  val.toString() :
     val === true ? '#t' :
@@ -80,4 +91,5 @@ export const valueToString = (val: Value): string =>
     isSymbolSExp(val) ? val.val :
     isEmptySExp(val) ? "'()" :
     isCompoundSExp(val) ? compoundSExpToString(val) :
+    isDictValue(val)? dictToString(val):
     val;
