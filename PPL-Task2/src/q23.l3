@@ -1,52 +1,55 @@
 (define bind
-    (lambda (f g)
-        (g f)
+    (lambda (v f)
+        (if (is-error? v)
+            v
+            (f v)
+        )
     )
 )
 
 (define make-error
-    (lambda () 'error)    
+    (lambda () 'error)
 )
 
 (define is-error?
-    (lambda (x) (x eq? 'error))
+    (lambda (x)
+        (eq? x 'error)
+    )
 )
 
-(define dict 
-    (lambda (p) 
+(define dict
+    (lambda (p)
         (if (pair? p)
-            (p)
+            p
             (make-error)
         )
     )
 )
 
-(define dict? 
-    (lambda (d) 
-        (if (pair? d)
-            (if (d eq? '())
-                #t
+(define dict?
+    (lambda (d)
+        (if (eq? d '())
+            #t
+            (if (pair? d)
                 (if (pair? (car d))
-                    (dict? cdr d)
-                    #f
-                )
-            )
-            #f
-        ) 
+                    (dict? (cdr d))
+                    #f)
+                #f)
+        )
     )
 )
 
-(define get 
-    (lambda (d key) 
+(define get
+    (lambda (d key)
         (if (dict? d)
-            (if ( (car (car d)) eq? key)
+            (if (eq? (car (car d)) key)
                 (cdr (car d))
-                (if ((cdr d) eq? ('()))
-                    ()
+                (if (eq? (cdr d) '())
+                    (make-error)
                     (get (cdr d) key)
                 )
             )
             (make-error)
-        )    
-    )    
+        )
+    )
 )
