@@ -35,13 +35,25 @@
     )
 )
 
+(define member?
+    (lambda (d key)
+        (if (eq? (car (car d)) key)
+            #t
+            (if (eq? (cdr d) '())
+                #f
+                (member? (cdr d) key)
+            )
+        )
+    )
+)
+
 (define no-duplicates?
     (lambda (d)
         (if (eq? d '())
-            #f
-            (if (is-error? (get (cdr d) (car (car d))))
-                (no-duplicates? (cdr d))
+            #t
+            (if (member? (cdr d) (car (car d)))
                 #f
+                (no-duplicates? (cdr d))
             )
         )
     ) 
