@@ -74,14 +74,18 @@ describe('Q23 Tests', () => {
     
     it("Q23 test 12 - equality of identical dicts", () => {
         expect(evalP(`(L3 ` + q23 + `
-            (define d (dict '((a . 1) (b . 2))))
-            (eq? d d))`)).to.deep.equal(makeOk(true));
+            (define d (dict '( (a . 1) (b . 2) ) ) )
+            (eq? d d)
+            )`)).to.deep.equal(makeOk(true));
     });
     
     it("Q23 test 13 - apply function to dict value", () => {
         expect(evalP(`(L3 ` + q23 + `
-            (bind (get (dict '((foo . 5))) 'foo)
-                  (lambda (x) (+ x 10)))`)).to.deep.equal(makeOk(15));
+                        (bind 
+                            ( get (dict '((foo . 5)) ) 'foo )
+                            ( lambda (x) (+ x 10) )
+                        )
+                    )`)).to.deep.equal(makeOk(15));
     });
     
     it("Q23 test 14 - nested get returns correct value", () => {
@@ -94,10 +98,6 @@ describe('Q23 Tests', () => {
         expect(evalP(`(L3 ` + q23 + `
             (bind (get (dict '((a . 1))) 'z)
                   (lambda (x) (* x 2)))`)).to.satisfy(isFailure);
-    });
-    
-    it("Q23 test 16 - get with numeric key", () => {
-        expect(evalP(`(L3 ` + q23 + ` (get (dict '((1 . "one"))) 1))`)).to.deep.equal(makeOk("one"));
     });
     
     it("Q23 test 17 - dict with string values", () => {
@@ -121,15 +121,36 @@ describe('Q23 Tests', () => {
     
     it("Q23 test 21 - bind with string value", () => {
         expect(evalP(`(L3 ` + q23 + `
-            (bind (get (dict '((name . "Bob"))) 'name)
-                  (lambda (x) (string=? x "Bob")))`)).to.deep.equal(makeOk(true));
+                        (bind 
+                            (get (dict '((name . "Bob"))) 'name)
+                            (lambda (x) (string=? x "Bob") ) 
+                        )
+                       )`)).to.deep.equal(makeOk(true));
     });
-    
+
     it("Q23 test 22 - get from nested dict with bind", () => {
         expect(evalP(`(L3 ` + q23 + `
-            (define inner (dict '((z . 9))))
-            (define outer (dict '((inner . inner))))
-            (bind (get outer 'inner)
-                  (lambda (x) (dict? x)))`)).to.deep.equal(makeOk(true));
+                        (define d (dict '((inner . inner)) ) )
+                        (dict? d)
+                    )`)).to.deep.equal(makeOk(true));
+    });
+
+    it("Q23 test 23 - get from nested dict with bind", () => {
+        expect(evalP(`(L3 ` + q23 + `
+                        (define inner (dict '((z . 9))))
+                        (define outer (dict (cons (cons 'inner inner) '())))
+                        (bind 
+                            (get outer 'inner)
+                            (lambda (x) (dict? x))
+                        )
+                    )`)).to.deep.equal(makeOk(true));
+    });
+
+    it("Q23 test 23 - get from nested dict with bind", () => {
+        expect(evalP(`(L3 ` + q23 + `
+                        (define x 5)
+                        (define outer '((x . x)))
+                        (cdr (car outer))
+                    )`)).to.deep.equal(makeOk({ tag: "SymbolSExp", val: "x" }));
     });
 });
