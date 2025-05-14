@@ -111,4 +111,17 @@ describe('Q22 Tests', () => {
         `)).to.deep.equal(makeOk(123));
       });
 
+      it("Q22 basic test 18 - nested dict special form supported", () => {
+      const r = evalP(`
+        (L32
+          ((dict
+            (outer (dict (inner 99)))
+            (other 0))
+          'outer))
+      `);
+      expect(r).to.satisfy((res: Result<Value>) =>
+        isOk(res) && isDictValue(res.value)
+      );
+    });
+
 });

@@ -54,24 +54,24 @@ describe('Q21 Tests', () => {
             'a))`)).to.deep.equal(makeOk(2));
     });
     
-    it("Q21 test 9 - dict? with duplicate keys returns false", () => {
+    it("Q21 test 9", () => {
         expect(evalP(`(L31 (dict? '((a . 1) (a . 2))))`)).to.deep.equal(makeOk(false));
     });
 
-    it("Q21 test 10 - get on dict with duplicate keys fails", () => {
+    it("Q21 test 10", () => {
         expect(evalP(`(L31 (get '((a . 1) (a . 2)) 'a))`)).to.satisfy(isFailure);
     });
 
-    it("Q21 test 11 - creating dict with duplicate keys fails", () => {
+    it("Q21 test 11 ", () => {
         expect(evalP(`(L31 (dict '((a . 1) (a . 2))))`)).to.satisfy(isFailure);
     });
 
-    it("Q21 test 12 - dict? on valid deep dict returns true", () => {
+    it("Q21 test 12", () => {
         expect(evalP(`(L31 (dict? '((a . 1) (b . 2) (c . 3))))`)).to.deep.equal(makeOk(true));
     });
 
-    it("Q21 test 13 - dict? on empty list returns true", () => {
+    it("Q21 test 13", () => {
         expect(evalP(`(L31 (dict? '()))`)).to.deep.equal(makeOk(true));
     });
-
+    
 });
