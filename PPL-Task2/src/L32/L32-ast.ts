@@ -33,8 +33,8 @@ import { Sexp, Token } from "s-expression";
 ;;         |  ( let ( binding* ) <cexp>+ )  / LetExp(bindings:Binding[], body:CExp[]))
 ;;         |  ( quote <sexp> )              / LitExp(val:SExp)
 ;;         |  ( <cexp> <cexp>* )            / AppExp(operator:CExp, operands:CExp[]))
-;;         |  (dict ( <var> <cexp> ) *      /  DictValue( entries: { key: VarDecl, value: CExp} [] )
-;; <binding>  ::= ( <var> <cexp> )           / Binding(var:VarDecl, val:Cexp)
+;;         |  (dict ( <symbol> <cexp> ) *   / DictValue( entries: { key: SymbolSexp, value: CExp} [] )
+;; <binding>  ::= ( <var> <cexp> )          / Binding(var:VarDecl, val:Cexp)
 ;; <prim-op>  ::= + | - | * | / | < | > | = | not |  and | or | eq? | string=?
 ;;                  | cons | car | cdr | pair? | number? | list 
 ;;                  | boolean? | symbol? | string?      ##### L3
@@ -262,6 +262,8 @@ const parseLetExp = (bindings: Sexp, body: Sexp[]): Result<LetExp> => {
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 const isKeyValuePair = (x: Sexp): x is [string, Sexp] =>
     Array.isArray(x) && x.length === 2 && typeof x[0] === "string" && isIdentifier(x[0]);
   
@@ -279,6 +281,8 @@ export const parseDictExp = (params: Sexp[]): Result<DictExp> => {
       ))
     );
   };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 // sexps has the shape (quote <sexp>)

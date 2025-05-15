@@ -5,7 +5,7 @@ import { isPrimOp, CExp, PrimOp, VarDecl } from './L32-ast';
 import { isNumber, isArray, isString } from '../shared/type-predicates';
 import { append } from 'ramda';
 
-export type Value = SExpValue;
+export type Value = SExpValue | DictValue;
 
 export type Functional = PrimOp | Closure;
 export const isFunctional = (x: any): x is Functional => isPrimOp(x) || isClosure(x);
@@ -37,10 +37,10 @@ export type SymbolSExp = {
 }
 export type DictValue = {
     tag: "DictValue";
-    entries: [string, Value][];
+    entries: [SymbolSExp, Value][];
 }
 
-export type SExpValue = number | boolean | string | PrimOp | Closure | SymbolSExp | EmptySExp | CompoundSExp | DictValue;
+export type SExpValue = number | boolean | string | PrimOp | Closure | SymbolSExp | EmptySExp | CompoundSExp;
 export const isSExp = (x: any): x is SExpValue =>
     typeof(x) === 'string' || typeof(x) === 'boolean' || typeof(x) === 'number' ||
     isSymbolSExp(x) || isCompoundSExp(x) || isEmptySExp(x) || isPrimOp(x) || isClosure(x);
@@ -49,7 +49,7 @@ export const makeCompoundSExp = (val1: SExpValue, val2: SExpValue): CompoundSExp
     ({tag: "CompoundSexp", val1: val1, val2 : val2});
 export const isCompoundSExp = (x: any): x is CompoundSExp => x.tag === "CompoundSexp";
 
-export const makeDictValue = (entries: [string, Value][]): DictValue =>
+export const makeDictValue = (entries: [SymbolSExp, Value][]): DictValue =>
     ({ tag: "DictValue", entries });
 export const isDictValue = (x: any): x is DictValue => x.tag === "DictValue";
 

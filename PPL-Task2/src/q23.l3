@@ -35,7 +35,7 @@
     )
 )
 
-(define member?
+(define exists?
     (lambda (d key)
         (if (eq? d '())
             #f
@@ -43,7 +43,7 @@
                 #t
                 (if (eq? (cdr d) '())
                     #f
-                    (member? (cdr d) key)
+                    (exists? (cdr d) key)
                 )
             )
         )
@@ -54,7 +54,7 @@
     (lambda (d)
         (if (eq? d '())
             #t
-            (if (member? (cdr d) (car (car d)))
+            (if (exists? (cdr d) (car (car d)))
                 #f
                 (no-duplicates? (cdr d))
             )

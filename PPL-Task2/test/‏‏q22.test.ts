@@ -124,4 +124,11 @@ describe('Q22 Tests', () => {
       );
     });
 
+    
+    it("Q22 test 8 - empty dictionary application should fail", () => {
+      expect(evalP(`(L32 ((dict) 'a))`)).to.deep.equal(
+          makeFailure("Empty args for special form")
+      );
+  });
+
 });

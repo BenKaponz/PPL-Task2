@@ -8,7 +8,7 @@ import { isAppExp, isBoolExp, isDefineExp, isIfExp, isLitExp, isNumExp,
 import { makeBoolExp, makeLitExp, makeNumExp, makeProcExp, makeStrExp } from "./L32-ast";
 import { parseL32Exp } from "./L32-ast";
 import { applyEnv, makeEmptyEnv, makeEnv, Env } from "./L32-env";
-import { isClosure, makeClosure, Closure, Value, makeDictValue, isDictValue, DictValue, isSymbolSExp, makeSymbolSExp } from "./L32-value";
+import { isClosure, makeClosure, Closure, Value, makeDictValue, isDictValue, DictValue, isSymbolSExp, makeSymbolSExp, SymbolSExp } from "./L32-value";
 import { first, rest, isEmpty, List, isNonEmptyList } from '../shared/list';
 import { isBoolean, isNumber, isString } from "../shared/type-predicates";
 import { Result, makeOk, makeFailure, bind, mapResult, mapv } from "../shared/result";
@@ -37,22 +37,22 @@ const L32applicativeEval = (exp: CExp, env: Env): Result<Value> =>
     isDictExp(exp) ? evalDict(exp, env) :
     exp;
 
-    const evalDict = (exp: DictExp, env: Env): Result<Value> => {
-        const keys = exp.entries.map(e => e.key.val);
-        const unique = new Set(keys);
-        if (unique.size !== keys.length) {
-          return makeFailure(`dict: Duplicate key(s) found: ${keys.join(", ")}`);
-        }
+  const evalDict = (exp: DictExp, env: Env): Result<Value> => {
+      const keys = exp.entries.map(e => e.key.val);
+      const unique = new Set(keys);
+      if (unique.size !== keys.length) {
+        return makeFailure(`dict: Duplicate key(s) found: ${keys.join(", ")}`);
+      }
         
-        return bind(mapResult(entry => L32applicativeEval(entry.val, env), exp.entries),
-          (vals: Value[]) => {
-            const entries: [string, Value][] = exp.entries.map((e, i) =>
-              [e.key.val, vals[i]]
-            );
-            return makeOk(makeDictValue(entries));
-          }
-        );
-      };
+      return bind(mapResult(entry => L32applicativeEval(entry.val, env), exp.entries),
+        (vals: Value[]) => {
+          const entries: [SymbolSExp, Value][] = exp.entries.map((e, i) =>
+            [makeSymbolSExp(e.key.val), vals[i]]
+          );
+          return makeOk(makeDictValue(entries));
+        }
+      );
+    };
 
 export const isTrueValue = (x: Value): boolean =>
     ! (x === false);
@@ -82,7 +82,7 @@ const valueToLitExp = (v: Value): NumExp | BoolExp | StrExp | LitExp | PrimOp | 
     isPrimOp(v) ? v :
     isClosure(v) ? makeProcExp(v.params, v.body) :
     isDictValue(v) ? makeDictExp(v.entries.map(([key, val]) => ({
-          key: makeSymbolSExp(key),
+          key: key,
           val: valueToLitExp(val) }))):
     makeLitExp(v);
 
@@ -102,7 +102,7 @@ const applyDict = (dict: DictValue, args: Value[]): Result<Value> => {
       return makeFailure(`Dictionary key must be a symbol, but got: ${format(key)}`);
     }
 
-    const found = dict.entries.find(entry => entry[0] === key.val);
+    const found = dict.entries.find(([k, _]) => k.val === key.val);
     return found ? makeOk(found[1]) : makeFailure(`Key not found in dictionary: ${key.val}`);
   };
 

@@ -45,7 +45,7 @@ export const applyPrimitive = (proc: PrimOp, args: Value[]): Result<Value> =>
 
     makeFailure(`Bad primitive op: ${format(proc.op)}`);
 
-// Functions added for the new prim ops //
+// Functions added for the new prim ops /////////////////////////////////////////////////////////////////////////////////////////////////////////
 const dictPrim = (val: Value): CompoundSExp =>
     isCompoundSExp(val) ? val : makeCompoundSExp(val, makeEmptySExp());
 
@@ -90,7 +90,7 @@ const findInDict = (dict: CompoundSExp, key: SymbolSExp): Result<Value> =>
                 ? findInDict(dict.val2, key)
                 : makeFailure(`get: Key not found in dictionary: ${format(key)}`));
 
-//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 
 
 

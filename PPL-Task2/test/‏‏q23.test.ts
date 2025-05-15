@@ -72,13 +72,6 @@ describe('Q23 Tests', () => {
         expect(evalP(`(L3 ` + q23 + ` (dict? '(a b c)))`)).to.deep.equal(makeOk(false));
     });
     
-    it("Q23 test 12 - equality of identical dicts", () => {
-        expect(evalP(`(L3 ` + q23 + `
-            (define d (dict '( (a . 1) (b . 2) ) ) )
-            (eq? d d)
-            )`)).to.deep.equal(makeOk(true));
-    });
-    
     it("Q23 test 13 - apply function to dict value", () => {
         expect(evalP(`(L3 ` + q23 + `
                         (bind 

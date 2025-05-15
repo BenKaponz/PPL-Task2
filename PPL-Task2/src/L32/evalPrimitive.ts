@@ -1,6 +1,6 @@
 import { reduce } from "ramda";
 import { PrimOp } from "./L32-ast";
-import { isCompoundSExp, isEmptySExp, isSymbolSExp, makeCompoundSExp, makeEmptySExp, CompoundSExp, EmptySExp, Value } from "./L32-value";
+import { isCompoundSExp, isEmptySExp, isSymbolSExp, makeCompoundSExp, makeEmptySExp, CompoundSExp, EmptySExp, Value, SExpValue } from "./L32-value";
 import { List, allT, first, isNonEmptyList, rest } from '../shared/list';
 import { isBoolean, isNumber, isString } from "../shared/type-predicates";
 import { Result, makeOk, makeFailure } from "../shared/result";
@@ -87,10 +87,10 @@ const cdrPrim = (v: Value): Result<Value> =>
     makeFailure(`Cdr: param is not compound ${format(v)}`);
 
 const consPrim = (v1: Value, v2: Value): CompoundSExp =>
-    makeCompoundSExp(v1, v2);
+    makeCompoundSExp(v1 as SExpValue, v2 as SExpValue);
 
 export const listPrim = (vals: List<Value>): EmptySExp | CompoundSExp =>
-    isNonEmptyList<Value>(vals) ? makeCompoundSExp(first(vals), listPrim(rest(vals))) :
+    isNonEmptyList<Value>(vals) ? makeCompoundSExp(first(vals) as SExpValue, listPrim(rest(vals))) :
     makeEmptySExp();
 
 const isPairPrim = (v: Value): boolean =>
