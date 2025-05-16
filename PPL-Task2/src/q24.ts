@@ -74,9 +74,7 @@ const rewriteDictExp = (dictExp: DictExp): CExp =>
     )
   );
 
-const entriesToSexpList = (
-  entries: { key: SymbolSExp; val: CExp }[]
-): SExpValue =>
+const entriesToSexpList = ( entries: { key: SymbolSExp; val: CExp }[] ): SExpValue =>
   entries.reduceRight<SExpValue>(
     (acc, { key, val }) =>
       makeCompoundSExp(

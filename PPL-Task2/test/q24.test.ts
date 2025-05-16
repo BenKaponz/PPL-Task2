@@ -130,4 +130,26 @@ describe('Q24 Tests', () => {
                           ((dict (a (dict (c 2) (d 3))) (b (+ 1 1))) 'a))`)).to.deep.equal(evalParse("'(dict (c 2) (d 3))"))
     });
 
+    it("Q24 test 15", () => {
+        expect(noDict(`(L32 ((dict (a (lambda (x) (+ x 1)))) 'a))`)).to.deep.equal(makeOk(true));
+        expect(evalP(`(L32 ((dict (a (lambda (x) (+ x 1)))) 'a))`)).to.deep.equal(evalParse(`'(lambda (x) (+ x 1))`));
+    });
+
+    it("Q24 test 17", () => {
+        expect(noDict(`(L32 ((dict (a (dict (b (dict (c 5))))) ) 'a))`)).to.deep.equal(makeOk(true));
+        expect(evalP(`(L32 ((dict (a (dict (b (dict (c 5))))) ) 'a))`)).to.deep.equal(evalParse(`'(dict (b (dict (c 5))))`));
+    });
+
+    it("Q24 test 18", () => {
+        expect(noDict(`(L32 ((dict (x #t) (y #f)) 'y))`)).to.deep.equal(makeOk(true));
+        expect(evalP(`(L32 ((dict (x #t) (y #f)) 'y))`)).to.deep.equal(makeOk(false));
+    });
+
+    it("Q24 test 19", () => {
+        expect(noDict(`(L32 ((dict (msg "hello") (cond (if #f 1 0))) 'cond))`)).to.deep.equal(makeOk(true));
+        expect(evalP(`(L32 ((dict (msg "hello") (cond (if #f 1 0))) 'cond))`)).to.deep.equal(evalParse(`'(if #f 1 0)`));
+    });
+
+
+
 });
