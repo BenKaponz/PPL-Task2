@@ -131,4 +131,11 @@ describe('Q22 Tests', () => {
       );
   });
 
+
+it("Q22 Test 30: creating dict in lambda", () => {
+  const result = evalP(`(L32 (define d (lambda (x) (dict (a x)) )) ((d 5) 'a))`);
+  expect(result).to.deep.equal(makeOk(5));
+});
+
+
 });
