@@ -74,18 +74,6 @@ const rewriteDictExp = (dictExp: DictExp): CExp =>
     )
   );
 
-const entriesToSexpList = (
-  entries: { key: SymbolSExp; val: CExp }[]
-): SExpValue =>
-  entries.reduceRight<SExpValue>(
-    (acc, { key, val }) =>
-      makeCompoundSExp(
-        makeCompoundSExp(key, convertCExp2SExp(val)),
-        acc
-      ),
-    makeEmptySExp()
-  );
-
 const convertCExp2SExp = (cExp: CExp): SExpValue =>
     isAtomicExp(cExp) ? convertAtomicExp2SExp(cExp) :
     convertCompExp2SExp(cExp);
